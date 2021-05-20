@@ -9,7 +9,13 @@ var x = 0.01,
     z = 0.01,
     modelo,
     scoreVal = 0,
-    createdCars = [];
+    createdCars = [],
+    carMesh; // TO DO
+
+var carGeometry = new THREE.BoxGeometry(90, 20, 225);
+var carMaterial = new THREE.MeshBasicMaterial({
+  color: 0x8888ff
+});
 socket.on('accelerometer', function (data) {
   var arr = [];
   data.forEach(function (element) {
@@ -62,6 +68,11 @@ function init() {
     modelo.castShadow = true;
     modelo.position.x = -100;
     modelo.position.y = -43;
+    carMesh = new THREE.Mesh(carGeometry, carMaterial);
+    carMesh.position.x = modelo.position.x + 100;
+    carMesh.position.y = modelo.position.y;
+    carMesh.position.z = modelo.position.z;
+    scene.add(carMesh);
     scene.add(gltf.scene);
     animate();
   });
@@ -163,6 +174,8 @@ function update() {
 
   modelo.position.z += z;
   modelo.position.x += x;
+  carMesh.position.x = modelo.position.x + 100;
+  carMesh.position.z = modelo.position.z - 100;
   var score = document.getElementById("score");
   scoreVal += 0.1;
   score.innerHTML = "Score: " + Math.trunc(scoreVal);

@@ -1,7 +1,10 @@
 const socket = io.connect('http://localhost:3000', { transports: ['websocket'] });
 
 let scene, camera, renderer;
-var x = 0.01, y = 0.01, z = 0.01, modelo, scoreVal = 0, createdCars = [];
+var x = 0.01, y = 0.01, z = 0.01, modelo, scoreVal = 0, createdCars = [], carMesh;
+// TO DO
+var carGeometry = new THREE.BoxGeometry( 90, 20, 225 );
+var carMaterial = new THREE.MeshBasicMaterial({ color: 0x8888ff });
 
 socket.on('accelerometer', function (data) {
     let arr = []
@@ -70,6 +73,12 @@ function init() {
 
         modelo.position.x = -100;
         modelo.position.y = -43;
+
+        carMesh = new THREE.Mesh(carGeometry, carMaterial);
+        carMesh.position.x = modelo.position.x + 100; 
+        carMesh.position.y = modelo.position.y; 
+        carMesh.position.z = modelo.position.z; 
+        scene.add(carMesh);
 
         scene.add(gltf.scene);
         animate();
@@ -182,6 +191,9 @@ function update() {
 
     modelo.position.z += z;
     modelo.position.x += x;
+
+    carMesh.position.x = modelo.position.x + 100;
+    carMesh.position.z = modelo.position.z - 100;
 
     let score = document.getElementById("score");
     scoreVal += 0.1;
