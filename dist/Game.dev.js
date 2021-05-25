@@ -10,11 +10,15 @@ var x = 0.01,
     modelo,
     scoreVal = 0,
     createdCars = [],
-    carMesh; // TO DO
+    createdMesh = [],
+    carMesh;
+var cancel = setInterval(createVehicles, 5000);
+var carGeometry = new THREE.BoxGeometry(90, 20, 225); //var carMaterial = new THREE.MeshBasicMaterial({ color: 0x8888ff , });
 
-var carGeometry = new THREE.BoxGeometry(90, 20, 225);
 var carMaterial = new THREE.MeshBasicMaterial({
-  color: 0x8888ff
+  color: 0x8888ff,
+  opacity: 0,
+  transparent: true
 });
 socket.on('accelerometer', function (data) {
   var arr = [];
@@ -61,7 +65,6 @@ function init() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.addEventListener('change', renderer);
   document.body.appendChild(renderer.domElement);
-  var cancel = setInterval(createVehicles, 5000);
   var loader = new THREE.GLTFLoader();
   loader.load('models/ford-f150-2018-raptor/scene.gltf', function (gltf) {
     modelo = gltf.scene;
@@ -72,6 +75,7 @@ function init() {
     carMesh.position.x = modelo.position.x + 100;
     carMesh.position.y = modelo.position.y;
     carMesh.position.z = modelo.position.z;
+    carMesh.name = 'carMesh';
     scene.add(carMesh);
     scene.add(gltf.scene);
     animate();
@@ -92,7 +96,13 @@ function createVehicles() {
         model.position.x = randX;
         model.position.y = -43;
         model.position.z = 680;
+        secondMesh = new THREE.Mesh(carGeometry, carMaterial);
+        secondMesh.position.x = model.position.x;
+        secondMesh.position.y = model.position.y;
+        secondMesh.position.z = model.position.z;
         createdCars.push(model);
+        createdMesh.push(secondMesh);
+        scene.add(secondMesh);
         scene.add(gltf.scene);
       });
       break;
@@ -106,7 +116,13 @@ function createVehicles() {
         model.position.z = 680;
         var car = gltf.scene.children[0];
         car.scale.set(1.2, 1.2, 1.2);
+        secondMesh = new THREE.Mesh(carGeometry, carMaterial);
+        secondMesh.position.x = model.position.x;
+        secondMesh.position.y = model.position.y;
+        secondMesh.position.z = model.position.z;
         createdCars.push(model);
+        createdMesh.push(secondMesh);
+        scene.add(secondMesh);
         scene.add(gltf.scene);
       });
       break;
@@ -118,7 +134,13 @@ function createVehicles() {
         model.position.x = randX;
         model.position.y = -43;
         model.position.z = 680;
+        secondMesh = new THREE.Mesh(carGeometry, carMaterial);
+        secondMesh.position.x = model.position.x;
+        secondMesh.position.y = model.position.y;
+        secondMesh.position.z = model.position.z;
         createdCars.push(model);
+        createdMesh.push(secondMesh);
+        scene.add(secondMesh);
         scene.add(gltf.scene);
       });
       break;
@@ -130,7 +152,13 @@ function createVehicles() {
         model.position.x = randX;
         model.position.y = -43;
         model.position.z = 680;
+        secondMesh = new THREE.Mesh(carGeometry, carMaterial);
+        secondMesh.position.x = model.position.x;
+        secondMesh.position.y = model.position.y;
+        secondMesh.position.z = model.position.z;
         createdCars.push(model);
+        createdMesh.push(secondMesh);
+        scene.add(secondMesh);
         scene.add(gltf.scene);
       });
       break;
@@ -146,7 +174,6 @@ function animate() {
 function update() {
   createdCars.forEach(function (element, index, object) {
     if (element.position.z <= -200) {
-      //delete element;
       var arrTDel = object.splice(index, 1);
       scene.remove(arrTDel[0]);
       delete arrTDel[0];
@@ -154,7 +181,30 @@ function update() {
 
     element.position.z -= 25;
   });
-  console.log(createdCars);
+  createdMesh.forEach(function (element, index, object) {
+    if (element.position.z <= -200) {
+      var arrTDel = object.splice(index, 1);
+      scene.remove(arrTDel[0]);
+      delete arrTDel[0];
+    }
+
+    element.position.z -= 25;
+    var dx = carMesh.position.x - element.position.x;
+    var dy = carMesh.position.y - element.position.y;
+    var dz = carMesh.position.z - element.position.z;
+    console.log("coche " + index);
+    console.log(Math.sqrt(dx * dx + dy * dy + dz * dz));
+    var crashVal = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (crashVal < 100) {
+      console.log("HIT");
+      clearInterval(cancel);
+      var end = document.getElementById("final");
+      end.innerHTML = "HAS PERDUT! LA TEVA PUNTUACIÓ ÉS DE: " + Math.trunc(scoreVal) + " PUNTS.";
+      end.style.backgroundColor = "black";
+      modelo = undefined;
+    }
+  }); //console.log(createdCars);
 
   if (modelo.position.x <= 41 && modelo.position.x >= -230) {
     modelo.position.x += x;
@@ -178,8 +228,7 @@ function update() {
   carMesh.position.z = modelo.position.z - 100;
   var score = document.getElementById("score");
   scoreVal += 0.1;
-  score.innerHTML = "Score: " + Math.trunc(scoreVal);
-  console.log(modelo);
+  score.innerHTML = "Score: " + Math.trunc(scoreVal); //console.log(modelo);
 }
 
 init();
